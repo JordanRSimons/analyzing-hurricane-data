@@ -1,14 +1,11 @@
+# Introduction - How Can We Best Determine the Flooding Impact of Hurricanes?
+
+
+This notebook discusses visualizations produced in Python and R, and how they contributed to our understanding of hurricane rainfall over three East Texas rivers (the Brazos, Trinity, and Neches). Our goal is to determine if the tracks hurricanes take through the region might be able to predict river flooding risk. As described in the README LINK!!!!!!! we split hurrices into three groups based on track: NE, NW, drag.
+
 ![Total Rainfall](../images/allStormsTotalRain.png)
 
-# Recap and Introduction
-
-This notebook discusses visualizations produced in Python and R, and how they contributed to our understanding of hurricane rainfall over three East Texas rivers (the Brazos, Trinity, and Neches). Our goal is to determine if the tracks hurricanes take through the region might be able to predict river flooding risk. 
-
-![Introduction Diagram](../images/intro.png)
-
-We split hurricanes into three groups based on track. Northeast hurricanes like Ike moved generally northward through the region with tracks west of Houston. Northwest storms like Hermine track similarly, but west of Houston, while drag storms, such as Harvey "drag" along the coastline. 
-
-This notebook will serve as a sample how I approached an exploritory data-based project. The plots shown in this notebook are only a small fraction of the hundreds of plots we investigated. If you are interested in how the datasets used to make these plots were processed, or how the plots themselves were coded, see the previous notebook (01_data_processing).
+This notebook serves as a sample of how I approached an exploritory data-based project. The plots shown in this notebook are a small fraction of the hundreds of plots I created. If you are interested in how the datasets used to make these plots were processed, or how the plots themselves were coded, see the previous notebook (01_data_processing).
 
 # Hurricane Harvey, a Cautionary Tale 
 
@@ -31,6 +28,7 @@ In this showcase, I will discuss the average daily total rainfall plots, made in
 ![Harvey Plots](../images/meanDailyRainAllDrag.png)
 
 ![Harvey Plots](../images/meanDailyRainNWNE.png)
+*Plots showing mean daily rainfall for all hurricanes (top left) and for each other primary track group (other three plots).*
 
 These plots compute their values by summing the rainfall on each full day in the sample with a hurricane present somewhere over the river basin, then averaging the results. This particular metric will favor storms such as Harvey that linger in the area a long time will be overrepresented, while fast-moving storms are underrepresented.
 
