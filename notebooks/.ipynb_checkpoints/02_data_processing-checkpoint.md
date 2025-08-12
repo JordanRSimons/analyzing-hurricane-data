@@ -1,22 +1,20 @@
-![Introduction Diagram](../images/intro.png)
-
 # Introduction to the Problem
 
-This notebook discusses data processing in Python and R done as the first step in our analysis of hurricane rainfall over three East Texas rivers (the Brazos, Trinity, and Neches). Our goal is to determine if the tracks hurricanes take through the region might be able to predict river flooding risk. 
+This notebook discusses data processing in Python and R done as the first step in my analysis of hurricane rainfall over three East Texas rivers (the Brazos, Trinity, and Neches). The goal is to determine if the tracks hurricanes take through the region might be able to predict river flooding risk. 
 
-We found all hurricanes that directly dropped rain over these three river basins between 2005 and 2021 and split them into three groups based on track. Northeast hurricanes like Ike moved generally northward through the region with tracks west of Houston. Northwest storms like Hermine track similarly, but west of Houston, while drag storms, such as Harvey "drag" along the coastline. 
+I found all hurricanes that directly dropped rain over these three river basins between 2005 and 2021 and split them into three groups based on track, as discussed in the [README](https://github.com/JordanRSimons/analyzing-hurricane-data/blob/main/README.md).
 
-In the sections below, I will showcase how I prepared gathered data in a variety of formats for exploritory visualization-based analysis (see notebook 02_visualization_and_exploritory_analysis for the visualizations themselves). Different types of data required two different workflows, one mostly in Python and one mostly in R. For readability, this notebook is divided based on language.
+In the sections below, I will showcase how I prepared gathered data in a variety of formats for exploritory visualization-based analysis (see [notebook 1](https://github.com/JordanRSimons/analyzing-hurricane-data/blob/main/notebooks/01_visualization_and_exploratory_analysis.md) for the visualizations themselves). Different types of data required two different workflows, one mostly in Python and one mostly in R. For readability, this notebook is divided based on language.
 
-The R section primarily showcases my handling of data involving inconsistant entries and managing date formating. The Python section primarily showcases a smooth function-based plot creation workflow and management of different map projections.
+The R section primarily showcases my handling of data involving inconsistent entries and managing date formatting. The Python section primarily showcases a smooth function-based plot creation workflow and management of different map projections.
 
-We used both METAR format weather station data from the ASOS or AWOS sensor network ([archived online](https://mesonet.agron.iastate.edu/request/download.phtml?network=TX_ASOS) at the Iowa Environmental Mesonet), as well as netCDF meteorological data from the [NCEP North American Regional Reanalysis](https://psl.noaa.gov/data/gridded/data.narr.html) (NARR) model database for this project
+I used both METAR format weather station data from the ASOS or AWOS sensor network ([archived online](https://mesonet.agron.iastate.edu/request/download.phtml?network=TX_ASOS) at the Iowa Environmental Mesonet), as well as netCDF meteorological data from the [NCEP North American Regional Reanalysis](https://psl.noaa.gov/data/gridded/data.narr.html) (NARR) model database for this project
 
 # Data Processing in R
 
 In this project, R was primarily used to handle weather station data in the METAR format, which can be read as csvs. The challenge with this analysis is that each of more than 75 weather stations in East Texas, each with their own data collection processes.
 
-We import libraries and begin with a function definition. The checkHurricanes function is ran over every weather station to check if the station was running during each hurricane impact in the dataset. The dataset hurricanes contains hurricane start and end times based on analysis of East Texas radar data.
+I import libraries and begin with a function definition. The checkHurricanes function is ran over every weather station to check if the station was running during each hurricane impact in the dataset. The dataset hurricanes contains hurricane start and end times based on analysis of East Texas radar data.
 
 ```r
 library(tidyverse)
@@ -107,13 +105,13 @@ fwrite(allStormsAllSites,"output/allStormsAllSites.csv")
 
 For the purposes of this showcase, the file allStormsAllSites2 used in the following analysis can be considered to be a copy of allStormsAllSites.
 
-Our goal is to get statistics such the total rainfall at a station during the duration a hurricane was present, so we can determine which group of hurricanes pose the greatest flooding risk to a given area. This means we are interested in total rainfall. 
+My goal is to quantify the total rainfall at each station during the times a hurricane was present in order to determine which group of hurricanes pose the greatest flooding risk to a given area.
 
 The issue is that these stations don't have a total rainfall variable. Instead, they have a variable called p01i, defined as “one hour precipitation for the period from the observation time to the time of previous hourly precipitation reset.” 
 
-To better understand exactly what this means, consider a backyard rain gauge. Every so often, someone checks it, and records how much water is present: Perhaps at 10:22, there is 0.1" of water, and at 10:44, there is 0.3" of water. This is the form of the p01i data. Critically, between 10:22 and 10:42, 0.2" of rain fell, NOT 0.3". Then, once every hour, the rain gauge is emptied, a reset. This normally occurs on the hour in our data, but not always. Perhaps, at 11:02, this station records 0.01" of rain. This signifies that soon after 10:44, the station was reset, and only a tiny bit more rain fell since then. Data reporting times are different between stations and also change over time, making this data difficult to work with.
+To better understand exactly what this means, consider a backyard rain gauge. Every so often, someone checks it, and records how much water is present: Perhaps at 10:22, there is 0.1" of water, and at 10:44, there is 0.3" of water. This is the form of the p01i data. Critically, between 10:22 and 10:42, 0.2" of rain fell, NOT 0.3". Then, once every hour, the rain gauge is emptied, a reset. This normally occurs on the hour in the data, but not always. Perhaps, at 11:02, this station records 0.01" of rain. This signifies that soon after 10:44, the station was reset, and only a tiny bit more rain fell since then. Data reporting times are different between stations and also change over time, making this data difficult to work with.
 
-To handle these observation timing discrepancies, we  computed the difference from each measure back to the preceding one. The value corresponding to XX:42 would be 0.2. If this value is negative, it denotes a reset occurred since the last measure. But if all values in an hour are 0 or if heavy rain falls in the beginning of a new hour, this won’t be the case. So we also check if the hour or day has turned over. If this happens more than 19 minutes after a reset (to account for resets sometimes being slightly off the hour), we can mark a reset. When a reset has occurred, we record the original p01i value. When a reset hasn’t occurred, we record the difference computed earlier instead, the new rainfall since the last measure. With this new column, a simple sum or mean can give meaningful information about storm totals.
+To handle these observation timing discrepancies, I  computed the difference from each measure back to the preceding one. The value corresponding to XX:42 would be 0.2. If this value is negative, it denotes a reset occurred since the last measure. But if all values in an hour are 0 or if heavy rain falls in the beginning of a new hour, this won’t be the case. So I also check if the hour or day has turned over. If this happens more than 19 minutes after a reset (to account for resets sometimes being slightly off the hour), I can mark a reset. When a reset has occurred, I record the original p01i value. When a reset hasn’t occurred, I record the difference computed earlier instead, the new rainfall since the last measure. With this new column, a simple sum or mean can give meaningful information about storm totals.
 
 ```r
 # create a column with just the hour from the dateTime
@@ -150,7 +148,7 @@ allStormsAllSites2 <- allStormsAllSites2 %>% group_by(reset, station) %>% mutate
 
 
 # if reset was true, record the value from p01i (the first reading of that hour). Otherwise, record the difference
-# between that sample and the pevious one (how much new rain fell since the last sample)
+# between that sample and the previous one (how much new rain fell since the last sample)
 # Only reset for an hour/day change if the previous reset was more than 19 minutes ago.
 allStormsAllSites2$rainfall=ifelse((allStormsAllSites2$reset==TRUE & allStormsAllSites2$resetLag > 19) | allStormsAllSites2$negativeDiff==TRUE,allStormsAllSites2$p01i,allStormsAllSites2$diff_p01i)
 
@@ -160,7 +158,7 @@ allStormsAllSites2$inchPerHour=round(allStormsAllSites2$rainfall/allStormsAllSit
 # put the important columns right after the dateTime to make them easier to see
 allStormsAllSites2 <- allStormsAllSites2 %>% relocate(c(p01i,rainfall, diff_p01i,reset,resetLag,timeIncrement, negativeDiff,hourChange, dayChange,stationChange,inchPerHour, day, hour), .after=valid)
 ```
-We now have a rainfall column where each row shows the new rainfall since the last measurement - summing this column would give the total rainfall. Each storm also has a TRUE/FALSE column as described above corresponding to whether or not the station was active at the time a storm occured. By substituting the rainfall values to replace the TRUE values, it is easy to sum individual storm's rainfall.
+We now have a rainfall column where each row shows the new rainfall since the last measurement - summing this column would give the total rainfall. Each storm also has a TRUE/FALSE column as described above corresponding to whether or not the station was active at the time a storm occurred. By substituting the rainfall values to replace the TRUE values, it is easy to sum individual storm's rainfall.
 
 ```r
 # function to replace the TRUE values with rain total. Replace FALSE or missing measures with NA
@@ -179,7 +177,7 @@ summaryTotals <- allStormsAllSites2 %>% group_by(station) %>% summarize_at(vars(
 fwrite(summaryTotals,"output/summaryTotals.csv") 
 ```
 
-As a final step to prepare for plotting, we join the summaryTotals dataset with two other datasets. Since the summaryTotals file contains storm totals at all stations for all hurricanes, we can join this dataset with a separate dataset containing latitude and longitude position data for each station.
+As a final step to prepare for plotting, I join the summaryTotals dataset with two other datasets. Since the summaryTotals file contains storm totals at all stations for all hurricanes, I can join this dataset with a separate dataset containing latitude and longitude position data for each station.
 
 ```r
 # read in the new stationLocations file as "locations"
@@ -192,14 +190,14 @@ summaryLocationTotals <- full_join(locations, summaryTotals, by="station")
 fwrite(summaryLocationTotals,"output/summaryLocationTotals.csv") 
 ```
 
-Then we do another join with a dataset that summarizes the runtimes of various stations.
+Then I do another join with a dataset that summarizes the runtimes of various stations.
 
 ```r
 # add total storms encountered and station start/stop dates to the summary
 summaryLocationTotalsCount <- full_join(summaryLocationTotals, stationRunTime, by="station")
 ```
 
-For plotting purposes, we will want a categorical variable for rainfall totals.
+For plotting purposes, we will need a categorical variable for rainfall totals.
 
 ```r
 summaryLocationTotalsCount <- summaryLocationTotalsCount %>% mutate(
@@ -233,8 +231,8 @@ ggplot() +
   # add state map data
   geom_sf(data=state_map_data) + 
   
-  # add points from our locations file
-  #geom_point(data=summaryLocationTotals, aes(x=Lon,y=Lat), color="red") +
+  # add points from my locations file
+  # geom_point(data=summaryLocationTotals, aes(x=Lon,y=Lat), color="red") +
   geom_point(data=summaryLocationTotalsCount, aes(x=Lon,y=Lat,color=rainGroup)) +
   scale_colour_manual(values=cbbPalette) +
   
@@ -256,9 +254,9 @@ ggplot() +
 
 # Data Processing in Python
 
-In this project, Python was primarily used to handle data in the netCDF format. NetCDF files are multidimensional. In this case, the datasets contain 3 dimensions, time, and spacial coordinates x and y. Many data variables, some with data for many different altitude levels, are recorded at all time steps.
+In this project, Python was primarily used to handle data in the netCDF format. NetCDF files are multidimensional. In this case, the datasets contain 3 dimensions, time, and spatial coordinates x and y. Many data variables, some with data for many different altitude levels, are recorded at all time steps.
 
-My Python code uses a pair of functions to generate plots, storing each in a dictionary for quick retrieval. By changing the dictionary’s key, different plots can be displayed, making it well-suited for exploratory analysis (see the next notebook). Over the second summer of research, our needs evolved rapidly, and some elements of these functions were hardcoded in order to meet immediate goals. In these sections, I will omit some code for clarity and disucss potential improvements.
+My Python code uses a pair of functions to generate plots, storing each in a dictionary for quick retrieval. By changing the dictionary’s key, different plots can be displayed, making it well-suited for exploratory analysis (see the next notebook). Over the second summer of research, our needs evolved rapidly, and some elements of these functions were hardcoded in order to meet immediate goals. In these sections, I will omit some code for clarity and discuss potential improvements.
 
 With these functions, plots can be displayed with just two lines of code...
 
@@ -302,7 +300,7 @@ ds = xr.open_dataset('data/prwtrData/prwtrAllStormsExtended.nc')
 #OUTPUT: A single .nc dataset containing only data for times corresponding to the selected storms with analysis applied.
 def createData(fullData, allDates, selStorms, level = None, analysis = None, allStorms = None) :
 ```
-The dataset fullData is a large netCDF dataset containing weather data from across the United States that contains data from the months in which hurricanes in the dataset occured.
+The dataset fullData is a large netCDF dataset containing weather data from across the United States that contains data from the months in which hurricanes in the dataset occurred.
 
 The first parameter, allDates, allows the user to select the exact date ranges to consider for each hurricane. These date ranges were derived from observational radar data to cover the full time range during which the hurricane or its remnants dumped rain on the relevant portion of East Texas. This allows flexibility to test other date ranges, such as the day after landfall. If more date ranges were to be added in the future, these alternatives could be created by using a function to adjust the dates.
 
@@ -324,9 +322,9 @@ Next, selStorms selects which hurricanes to include in the output dataset. Optio
         selStorms = ['Rita', 'Erin', 'Humberto', 'Edouard', ..., 'Nicholas']
 ```
 
-Next, these parameters are applied to the fullData. Some data types, such as geopotential height (a measure of the altitude at which a specific air pressure value is found) come with multiple levels, requring an additional extraction.
+Next, these parameters are applied to the fullData. Some data types, such as geopotential height (a measure of the altitude at which a specific air pressure value is found) come with multiple levels, requiring an additional extraction.
 
-the analysis parameter allows for the data to come with an action like a mean or a median already applied to the data. The meanOfMeans analysis takes the mean of the data variable across each storm, then outputs a mean of these individual storm means.
+The analysis parameter allows for the data to come with an action like a mean or a median already applied to the data. The meanOfMeans analysis takes the mean of the data variable across each storm, then outputs a mean of these individual storm means.
 
 ```python
     # filters to a specific level if requested
@@ -346,7 +344,7 @@ the analysis parameter allows for the data to come with an action like a mean or
     if analysis == 'meanOfMeans' :
         data = data.mean(dim = 'time')
     
-    # loop through remaining storms and concatinate their individual data together with data0.
+    # loop through remaining storms and concatenate their individual data together with data0.
     for storm in selStorms[1:] :
         
         # like before, find the selected storm's index value in allStorms 
@@ -390,7 +388,7 @@ We now have a dataset that has been properly filtered to a workable size and is 
 
 # Function 2: makePlot
 
-The makePlot function does exactly as the name suggests, and turns the created dataset from the last funtion into the desired plot. Similar to the analysis parameter, some of these inputs could likely be functions instead of text.
+The makePlot function does exactly as the name suggests, and turns the created dataset from the last function into the desired plot. Similar to the analysis parameter, some of these inputs could likely be functions instead of text.
 
 ```python
 #INPUT: A dataset filtered by createData() such that there is a data variable given with position coordinates 'x' and 'y',
@@ -411,17 +409,17 @@ The levels parameter allows each type of plot to use a different provided array 
 
 Because the Earth is spherical, it is mathematically impossible to perfectly represent all spacial relationships between places on a flat map. Most people are used to seeing projections like the Plate Carree projection, which plots on a grid of latitudes and longitudes, and ends up severely deforming landmasses close to the poles.
 
-Meanwhile, NARR is parameterized using coordinates x and y, which are derived from the Northern Lambert Conformal Conic map projection, good for visualizing large areas. This projection draws latitude lines as perfect concentric circles, creating a cone-shaped map. For our maps of Texas, we will use the same projection as the data source.
+Meanwhile, NARR is parameterized using coordinates x and y, which are derived from the Northern Lambert Conformal Conic map projection, good for visualizing large areas. This projection draws latitude lines as perfect concentric circles, creating a cone-shaped map. For maps of Texas, I will use the same projection as the data source.
 
 The cartopy Python package allows transformations between these projections, as seen in the following function code.
 
-The window parameter allows plots to be made with either a zoomed in view on East Texas or a zoomed out view of the central US.
+The window parameter allows plots to be made with either a zoomed in view of East Texas or a zoomed out view of the central US.
 
 ```python
-    # define the map projection our data's x,y values are given in
+    # define the map projection the data's x,y values are given in
     data_crs = ccrs.LambertConformal(central_longitude=-107,central_latitude=50, standard_parallels=[50, 50.000001], false_easting = 5632642.22547, false_northing = 4612545.65137)
 
-    # set the bounds of the region, and the needed scaling to fill the plot with data filtered from another projetion
+    # set the bounds of the region, and the needed scaling to fill the plot with data filtered from another projection
     
     if window == 'area' :
         minlon = -103; maxlon = -90; minlat = 25; maxlat = 37
@@ -433,7 +431,7 @@ The window parameter allows plots to be made with either a zoomed in view on Eas
     
     # This code takes points with "source crs" in latitude and longitude (Plate Carree) and transforms the coordinates into data_crs (Lambert).
     # These new computed points computed from the corners of the area of interest are then used to slice the data.
-    # We can only slice the netCDF file on dimension variables (x and y), hence this conversion.
+    # You can only slice the netCDF file on dimension variables (x and y), hence this conversion.
     minx, miny = data_crs.transform_point(minlon + minlonScale, minlat + minlatScale, src_crs=ccrs.PlateCarree())
     maxx, maxy = data_crs.transform_point(maxlon + maxlonScale, maxlat + maxlatScale, src_crs=ccrs.PlateCarree())
 ```
@@ -473,7 +471,7 @@ Setting up the plot's gridlines requires more fun with map projections:
 
     plt.title(title, size = 40, weight='bold')
 
-    # add gridlines to our axes ax
+    # add gridlines to the axes ax
     # make the lines based on Plate Carree, lat/lon  
     # remove inline labels
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, x_inline=False, y_inline=False, linewidth=0.75, color='k',alpha=0.75)
@@ -499,7 +497,7 @@ The plot itself (either contour or filled contour) can then be drawn.
 
 ```python
     # count the number of colors needed: down arrow, all boxes, up arrow
-    # create a hexcode color palette with the correct number of colors
+    # create a hex code color palette with the correct number of colors
     
     numcol = len(levels) + 1
     
@@ -538,9 +536,6 @@ The plot itself (either contour or filled contour) can then be drawn.
         # should be plotted with a Lambert Conformal Conic projection
         cplot = ax.contourf(ds['lon'], ds['lat'], ds[variable], colors = palette, levels = levels, norm = norm, transform = ccrs.PlateCarree(),extend='both')
 
-    
-    
-    
     # create the color bar
     cbar = fig.colorbar(cplot, orientation='vertical', shrink = 0.75, ticks = levels)
     cbar.set_label(label = cbarLabel, size=25, weight='bold')
@@ -556,9 +551,9 @@ The plot itself (either contour or filled contour) can then be drawn.
     return fig
 ```
 
-Since this function allows easy storage of plots, we can then loop through all possible plot outputs to generate a plot dictionary for easy exploration of the resulting visualizations.
+Since this function allows easy storage of plots, I can then loop through all possible plot outputs to generate a plot dictionary for easy exploration of the resulting visualizations.
 
-This is the example dictionary for the data variable precipitable water. With additional looping and imporoved functions, a dictionary with all data variables could be created.
+This is the example dictionary for the data variable precipitable water. With additional looping and improved functions, a dictionary with all data variables could be created.
 
 ```python
 # definitions to set up for looping 
@@ -613,12 +608,12 @@ for gr in stormGroups :
         # thePlot.savefig('data/prwtrPlots/'+str(key)+'.jpg')
 ```
 
-Now, as promised, a plot can be called using one line of code, as promised. 
+Now, as promised, a plot can be called using one line of code. 
 
 ```python
 prwtrDict['all-18']
 ```
 
-See the next notebook for a discussion of the plots themselves.
+See the [notebook 1](https://github.com/JordanRSimons/analyzing-hurricane-data/blob/main/notebooks/01_visualization_and_exploratory_analysis.md) for a discussion of the plots themselves.
 
 
