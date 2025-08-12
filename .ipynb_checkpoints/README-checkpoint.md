@@ -15,7 +15,7 @@ The figure below shows the three river basins as well as an example of a hurrica
 
 # Repo Contents
 
-This repository contains an overview of exploratory data analysis and visualization done in both Python and R during a two year summer research internship at the University of Illinois.
+This repository contains an overview of exploratory data analysis and visualization done in both Python and R during a two-year summer research internship at the University of Illinois.
 
 * ['notebooks/01_visualization_and_exploratory_analysis.md'](https://github.com/JordanRSimons/analyzing-hurricane-data/blob/main/notebooks/01_visualization_and_exploratory_analysis.md): A discussion of my results and a showcase of plots made in both Python and R
 * '[notebooks/02_data_processing.md](https://github.com/JordanRSimons/analyzing-hurricane-data/blob/main/notebooks/02_data_processing.md)': A walkthrough of my Python and R code which prepares outside data for visualization and analysis
